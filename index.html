@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>360 Multi-Scene Story</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #000;
+    }
+
+    button { font: inherit; }
+
+    #panorama {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .scene-title {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 20;
+      max-width: min(70vw, 520px);
+      margin: 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.72);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 650;
+      line-height: 1.25;
+      pointer-events: none;
+    }
+
+    /* Annotation and teleport hotspots share the same base button. */
+    .custom-hotspot {
+      --hotspot-size: 36px;
+      width: var(--hotspot-size);
+      height: var(--hotspot-size);
+      border-radius: 999px;
+      border: 3px solid #fff;
+      background: rgba(0, 0, 0, 0.78);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.55);
+      transition: transform 0.18s ease, background 0.18s ease;
+      overflow: visible;
+      padding: 0;
+    }
+
+    .custom-hotspot:hover,
+    .custom-hotspot:focus-visible {
+      transform: scale(1.15);
+      background: rgba(30, 30, 30, 0.95);
+      outline: 3px solid rgba(255, 255, 255, 0.8);
+      outline-offset: 3px;
+    }
+
+    .custom-hotspot img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    /* Teleport hotspots are square with an arrow so students can distinguish them. */
+    .custom-hotspot.is-teleport {
+      border-radius: 9px;
+      background: rgba(0, 68, 102, 0.9);
+    }
+
+    .custom-hotspot.is-teleport:hover,
+    .custom-hotspot.is-teleport:focus-visible {
+      background: rgba(0, 84, 126, 0.98);
+    }
+
+    /* Optional scene thumbnail navigation. */
+    .scene-nav {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      z-index: 30;
+      display: flex;
+      gap: 10px;
+      max-width: calc(100vw - 32px);
+      padding: 10px;
+      overflow-x: auto;
+      transform: translateX(-50%);
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.72);
+      scrollbar-width: thin;
+    }
+
+    .scene-nav[hidden] { display: none; }
+
+    .scene-thumb {
+      flex: 0 0 112px;
+      display: grid;
+      gap: 5px;
+      padding: 4px;
+      border: 2px solid transparent;
+      border-radius: 9px;
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .scene-thumb:hover,
+    .scene-thumb:focus-visible {
+      border-color: rgba(255, 255, 255, 0.7);
+      outline: none;
+    }
+
+    .scene-thumb.is-active {
+      border-color: #fff;
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .scene-thumb img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: 5px;
+      background: #222;
+    }
+
+    .scene-thumb span {
+      padding: 0 2px 2px;
+      font-size: 0.78rem;
+      font-weight: 650;
+      line-height: 1.2;
+    }
+
+    /* Modal overlay for rich annotations. */
+    .annotation-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.62);
+    }
+
+    .annotation-overlay.is-open { display: flex; }
+
+    .annotation-card {
+      position: relative;
+      width: min(760px, 100%);
+      max-height: min(82vh, 820px);
+      overflow: auto;
+      border-radius: 16px;
+      background: #fff;
+      color: #161616;
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
+    }
+
+    .annotation-content { padding: 24px; }
+
+    .annotation-content h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      line-height: 1.1;
+    }
+
+    .annotation-content p {
+      margin: 0 0 16px;
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    .annotation-media { margin-top: 16px; }
+
+    .annotation-media img,
+    .annotation-media video {
+      display: block;
+      width: 100%;
+      max-height: 55vh;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #111;
+    }
+
+    .annotation-media audio { width: 100%; }
+
+    .annotation-media iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      border-radius: 10px;
+      background: #111;
+    }
+
+    .slideshow {
+      display: grid;
+      gap: 14px;
+    }
+
+    .slideshow-image {
+      display: block;
+      width: 100%;
+      max-height: 52vh;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #111;
+    }
+
+    .slideshow-caption { display: grid; gap: 6px; }
+    .slideshow-caption h3 { margin: 0; font-size: 1.15rem; line-height: 1.2; }
+    .slideshow-caption p { margin: 0; font-size: 1rem; line-height: 1.5; }
+
+    .slideshow-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .slideshow-button {
+      border: 0;
+      border-radius: 999px;
+      padding: 8px 14px;
+      background: #161616;
+      color: #fff;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .slideshow-button:hover,
+    .slideshow-button:focus-visible {
+      background: #000;
+      outline: 2px solid #444;
+      outline-offset: 2px;
+    }
+
+    .slideshow-counter {
+      color: #555;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .annotation-close {
+      position: sticky;
+      top: 0;
+      float: right;
+      z-index: 2;
+      margin: 12px 12px 0 0;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.78);
+      color: #fff;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .annotation-close:hover,
+    .annotation-close:focus-visible {
+      background: #000;
+      outline: 2px solid #fff;
+    }
+
+    .annotation-link {
+      display: inline-block;
+      margin-top: 4px;
+      color: #0645ad;
+      font-weight: 650;
+    }
+
+    @media (max-width: 600px) {
+      .annotation-overlay { padding: 12px; }
+      .annotation-content { padding: 18px; }
+      .scene-title { top: 10px; left: 10px; }
+      .scene-nav { bottom: 10px; max-width: calc(100vw - 20px); }
+      .scene-thumb { flex-basis: 92px; }
+    }
+  </style>
+</head>
+
+<body>
+  <main id="panorama" aria-label="Interactive 360 scene viewer"></main>
+  <p class="scene-title" id="sceneTitle" aria-live="polite"></p>
+  <nav class="scene-nav" id="sceneNav" aria-label="Choose a 360 scene"></nav>
+
+  <div class="annotation-overlay" id="annotationOverlay" aria-hidden="true">
+    <article class="annotation-card" role="dialog" aria-modal="true" aria-labelledby="annotationTitle">
+      <button class="annotation-close" id="annotationClose" aria-label="Close annotation">&times;</button>
+      <div class="annotation-content">
+        <h2 id="annotationTitle"></h2>
+        <p id="annotationText"></p>
+        <div class="annotation-media" id="annotationMedia"></div>
+        <a class="annotation-link" id="annotationLink" href="#" target="_blank" rel="noopener"></a>
+      </div>
+    </article>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+  <script>
+    /*
+      STUDENTS EDIT THIS SECTION
+      ------------------------------------------------------------
+      1. Set SHOW_SCENE_THUMBNAILS to true or false.
+      2. Add each panorama to SCENES with a unique scene ID.
+      3. Each scene can have its own starting view and hotspots.
+      4. Use type: "annotation" for a popup hotspot.
+      5. Use type: "teleport" and targetScene: "scene-id" to move elsewhere.
+      6. Open the browser console and click the panorama to find pitch/yaw.
+    */
+
+    const SHOW_SCENE_THUMBNAILS = true;
+    const FIRST_SCENE = "factory-floor";
+
+    const SCENES = {
+      "factory-floor": {
+        title: "Factory Floor",
+        panorama: "images/test360.jpg",
+        thumbnail: "images/test360.jpg",
+        thumbnailAlt: "Preview of the factory floor panorama",
+        startView: {
+          yaw: 0,
+          pitch: 0,
+          hfov: 90
+        },
+        hotspots: [
+          {
+            id: "factory-door",
+            type: "annotation",
+            label: "Factory entrance",
+            pitch: -2,
+            yaw: 35,
+            iconSrc: "images/hotspot-default.svg",
+            iconAlt: "",
+            iconSize: 32,
+            fallbackIcon: "+",
+            title: "Factory Entrance",
+            text: "This entrance was used by workers arriving for the morning shift. A short annotation can explain what the viewer should notice here.",
+            mediaType: "image",
+            mediaSrc: "images/factory-door.jpg",
+            mediaAlt: "Historic photo of the factory entrance"
+          },
+          {
+            id: "go-to-machine-room",
+            type: "teleport",
+            label: "Go to the machine room",
+            pitch: -5,
+            yaw: 112,
+            targetScene: "machine-room",
+            targetYaw: -35,
+            targetPitch: 0,
+            targetHfov: 90,
+            iconSize: 38,
+            fallbackIcon: "➜"
+          },
+          {
+            id: "oral-history",
+            type: "annotation",
+            label: "Oral history",
+            pitch: 4,
+            yaw: -78,
+            iconSrc: "images/hotspot-default.svg",
+            iconAlt: "",
+            iconSize: 32,
+            fallbackIcon: "▶",
+            title: "Oral History Clip",
+            text: "This hotspot plays an audio file. This could be a short interview, narration, or sound from the location.",
+            mediaType: "audio",
+            mediaSrc: "oral-history.mp3"
+          }
+        ]
+      },
+
+      "machine-room": {
+        title: "Machine Room",
+        panorama: "images/scene-02.jpg",
+        thumbnail: "images/scene-02.jpg",
+        thumbnailAlt: "Preview of the machine room panorama",
+        startView: {
+          yaw: -35,
+          pitch: 0,
+          hfov: 90
+        },
+        hotspots: [
+          {
+            id: "machine-note",
+            type: "annotation",
+            label: "Machine detail",
+            pitch: 2,
+            yaw: 25,
+            iconSrc: "images/hotspot-default.svg",
+            iconAlt: "",
+            iconSize: 32,
+            fallbackIcon: "i",
+            title: "Machine Detail",
+            text: "Each scene has its own hotspot list. Replace this with information specific to the second panorama."
+          },
+          {
+            id: "return-to-factory-floor",
+            type: "teleport",
+            label: "Return to the factory floor",
+            pitch: -6,
+            yaw: -110,
+            targetScene: "factory-floor",
+            targetYaw: 112,
+            targetPitch: 0,
+            targetHfov: 90,
+            iconSize: 38,
+            fallbackIcon: "➜"
+          }
+        ]
+      }
+    };
+
+    /*
+      END STUDENT EDITING SECTION
+      ------------------------------------------------------------
+    */
+
+    const overlay = document.getElementById("annotationOverlay");
+    const closeButton = document.getElementById("annotationClose");
+    const titleEl = document.getElementById("annotationTitle");
+    const textEl = document.getElementById("annotationText");
+    const mediaEl = document.getElementById("annotationMedia");
+    const linkEl = document.getElementById("annotationLink");
+    const sceneNav = document.getElementById("sceneNav");
+    const sceneTitle = document.getElementById("sceneTitle");
+
+    let currentSceneId = FIRST_SCENE;
+    let lastFocusedHotspot = null;
+
+    function createHotspotElement(hotSpotDiv, args) {
+      const isTeleport = args.type === "teleport";
+
+      hotSpotDiv.classList.add("custom-hotspot");
+      if (isTeleport) hotSpotDiv.classList.add("is-teleport");
+
+      hotSpotDiv.setAttribute("tabindex", "0");
+      hotSpotDiv.setAttribute("role", "button");
+      hotSpotDiv.setAttribute(
+        "aria-label",
+        args.label || (isTeleport ? "Move to another scene" : "Open annotation")
+      );
+      hotSpotDiv.title = args.label || "";
+
+      if (args.iconSize) {
+        hotSpotDiv.style.setProperty("--hotspot-size", `${args.iconSize}px`);
+      }
+
+      if (args.iconSrc) {
+        const iconImg = document.createElement("img");
+        iconImg.src = args.iconSrc;
+        iconImg.alt = args.iconAlt || "";
+        iconImg.onerror = () => {
+          hotSpotDiv.replaceChildren(document.createTextNode(args.fallbackIcon || (isTeleport ? "➜" : "+")));
+        };
+        hotSpotDiv.appendChild(iconImg);
+      } else {
+        hotSpotDiv.textContent = args.fallbackIcon || (isTeleport ? "➜" : "+");
+      }
+
+      const activate = () => {
+        lastFocusedHotspot = hotSpotDiv;
+        if (isTeleport) {
+          goToScene(args.targetScene, {
+            yaw: args.targetYaw,
+            pitch: args.targetPitch,
+            hfov: args.targetHfov
+          });
+        } else {
+          openAnnotation(args);
+        }
+      };
+
+      hotSpotDiv.addEventListener("click", activate);
+      hotSpotDiv.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          activate();
+        }
+      });
+    }
+
+    function sceneToPannellumConfig(sceneId, scene) {
+      const startView = scene.startView || {};
+
+      return {
+        type: "equirectangular",
+        panorama: scene.panorama,
+        yaw: startView.yaw ?? 0,
+        pitch: startView.pitch ?? 0,
+        hfov: startView.hfov ?? 90,
+        hotSpots: (scene.hotspots || []).map((hotspot) => ({
+          id: hotspot.id,
+          pitch: hotspot.pitch,
+          yaw: hotspot.yaw,
+          cssClass: "custom-hotspot",
+          createTooltipFunc: createHotspotElement,
+          createTooltipArgs: hotspot
+        }))
+      };
+    }
+
+    const pannellumScenes = Object.fromEntries(
+      Object.entries(SCENES).map(([sceneId, scene]) => [
+        sceneId,
+        sceneToPannellumConfig(sceneId, scene)
+      ])
+    );
+
+    const viewer = pannellum.viewer("panorama", {
+      default: {
+        firstScene: FIRST_SCENE,
+        autoLoad: true,
+        sceneFadeDuration: 700,
+        showControls: false,
+        compass: false,
+        fullscreenCtrl: false,
+        minHfov: 50,
+        maxHfov: 120
+      },
+      scenes: pannellumScenes
+    });
+
+    function goToScene(sceneId, view = {}) {
+      if (!SCENES[sceneId]) {
+        console.error(`Scene not found: ${sceneId}`);
+        return;
+      }
+
+      closeAnnotation(false);
+      currentSceneId = sceneId;
+      viewer.loadScene(sceneId, view.pitch, view.yaw, view.hfov);
+    }
+
+    function updateSceneInterface(sceneId) {
+      currentSceneId = sceneId;
+      sceneTitle.textContent = SCENES[sceneId]?.title || "360 Scene";
+
+      document.querySelectorAll(".scene-thumb").forEach((button) => {
+        const isActive = button.dataset.sceneId === sceneId;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-current", isActive ? "true" : "false");
+      });
+    }
+
+    function buildSceneNavigation() {
+      sceneNav.hidden = !SHOW_SCENE_THUMBNAILS;
+      if (!SHOW_SCENE_THUMBNAILS) return;
+
+      Object.entries(SCENES).forEach(([sceneId, scene]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "scene-thumb";
+        button.dataset.sceneId = sceneId;
+        button.setAttribute("aria-label", `View scene: ${scene.title || sceneId}`);
+
+        const image = document.createElement("img");
+        image.src = scene.thumbnail || scene.panorama;
+        image.alt = scene.thumbnailAlt || "";
+
+        const label = document.createElement("span");
+        label.textContent = scene.title || sceneId;
+
+        button.appendChild(image);
+        button.appendChild(label);
+        button.addEventListener("click", () => goToScene(sceneId));
+        sceneNav.appendChild(button);
+      });
+    }
+
+    function createSlideshow(slides) {
+      let currentSlide = 0;
+      const slideshow = document.createElement("div");
+      slideshow.className = "slideshow";
+      const image = document.createElement("img");
+      image.className = "slideshow-image";
+      const caption = document.createElement("div");
+      caption.className = "slideshow-caption";
+      const slideTitle = document.createElement("h3");
+      const slideText = document.createElement("p");
+      const controls = document.createElement("div");
+      controls.className = "slideshow-controls";
+      const prevButton = document.createElement("button");
+      prevButton.type = "button";
+      prevButton.className = "slideshow-button";
+      prevButton.textContent = "Previous";
+      const counter = document.createElement("span");
+      counter.className = "slideshow-counter";
+      const nextButton = document.createElement("button");
+      nextButton.type = "button";
+      nextButton.className = "slideshow-button";
+      nextButton.textContent = "Next";
+
+      function showSlide(index) {
+        const slide = slides[index];
+        image.src = slide.imageSrc;
+        image.alt = slide.imageAlt || "";
+        slideTitle.textContent = slide.title || "";
+        slideText.textContent = slide.text || "";
+        counter.textContent = `${index + 1} of ${slides.length}`;
+        slideTitle.hidden = !slide.title;
+        slideText.hidden = !slide.text;
+        prevButton.disabled = slides.length <= 1;
+        nextButton.disabled = slides.length <= 1;
+      }
+
+      prevButton.addEventListener("click", () => {
+        currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+        showSlide(currentSlide);
+      });
+
+      nextButton.addEventListener("click", () => {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+      });
+
+      caption.append(slideTitle, slideText);
+      controls.append(prevButton, counter, nextButton);
+      slideshow.append(image, caption, controls);
+      showSlide(currentSlide);
+      return slideshow;
+    }
+
+    function openAnnotation(data) {
+      titleEl.textContent = data.title || data.label || "Annotation";
+      textEl.textContent = data.text || "";
+      mediaEl.replaceChildren();
+
+      if (data.mediaType === "image" && data.mediaSrc) {
+        const img = document.createElement("img");
+        img.src = data.mediaSrc;
+        img.alt = data.mediaAlt || "";
+        mediaEl.appendChild(img);
+      } else if (data.mediaType === "video" && data.mediaSrc) {
+        const video = document.createElement("video");
+        video.src = data.mediaSrc;
+        video.controls = true;
+        video.playsInline = true;
+        mediaEl.appendChild(video);
+      } else if (data.mediaType === "audio" && data.mediaSrc) {
+        const audio = document.createElement("audio");
+        audio.src = data.mediaSrc;
+        audio.controls = true;
+        mediaEl.appendChild(audio);
+      } else if (data.mediaType === "embed" && data.mediaSrc) {
+        const iframe = document.createElement("iframe");
+        iframe.src = data.mediaSrc;
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        iframe.allowFullscreen = true;
+        iframe.title = data.title || "Embedded media";
+        mediaEl.appendChild(iframe);
+      } else if (data.mediaType === "slideshow" && Array.isArray(data.slides) && data.slides.length > 0) {
+        mediaEl.appendChild(createSlideshow(data.slides));
+      }
+
+      if (data.linkUrl && data.linkText) {
+        linkEl.href = data.linkUrl;
+        linkEl.textContent = data.linkText;
+        linkEl.style.display = "inline-block";
+      } else {
+        linkEl.href = "#";
+        linkEl.textContent = "";
+        linkEl.style.display = "none";
+      }
+
+      overlay.classList.add("is-open");
+      overlay.setAttribute("aria-hidden", "false");
+      closeButton.focus();
+    }
+
+    function closeAnnotation(returnFocus = true) {
+      if (!overlay.classList.contains("is-open")) return;
+      overlay.classList.remove("is-open");
+      overlay.setAttribute("aria-hidden", "true");
+      mediaEl.replaceChildren();
+
+      if (returnFocus && lastFocusedHotspot) {
+        lastFocusedHotspot.focus();
+      }
+    }
+
+    closeButton.addEventListener("click", () => closeAnnotation());
+
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) closeAnnotation();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && overlay.classList.contains("is-open")) {
+        closeAnnotation();
+      }
+    });
+
+    viewer.on("scenechange", (sceneId) => updateSceneInterface(sceneId));
+
+    document.getElementById("panorama").addEventListener("click", (event) => {
+      if (event.target.closest(".custom-hotspot")) return;
+      const pitch = viewer.getPitch().toFixed(2);
+      const yaw = viewer.getYaw().toFixed(2);
+      console.log(`Scene: ${currentSceneId} | Hotspot position: pitch: ${pitch}, yaw: ${yaw}`);
+    });
+
+    buildSceneNavigation();
+    updateSceneInterface(FIRST_SCENE);
+  </script>
+</body>
+</html>
