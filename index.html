@@ -522,15 +522,15 @@
       const P360_SHOW_SCENE_TITLE = true;
       const P360_START_FULLY_ZOOMED_OUT = true;
       const P360_MAX_HFOV = 120;
-      const P360_FIRST_SCENE = "marsh";
+      const P360_FIRST_SCENE = "marsh-boardwalk";
 
       const P360_SCENES = {
-        "marsh": {
-          title: "Marsh",
-          description: "A 360-degree view of a marsh.",
-          panorama: "images/test360.jpg",
-          thumbnail: "images/test360.jpg",
-          thumbnailAlt: "Preview of the marsh",
+        "marsh-boardwalk": {
+          title: "Marsh Boardwalk",
+          description: "A fall-season 360-degree view from a wooden boardwalk crossing a freshwater marsh. Birds are positioned throughout the cattails, open water, and sky, including an American Bittern, Virginia Rail, Common Gallinule, Red-winged Blackbird, and Black Tern.",
+          panorama: "images/marsh-panorama.jpg",
+          thumbnail: "images/marsh-panorama.jpg",
+          thumbnailAlt: "Preview of a wooden boardwalk crossing a freshwater marsh",
           startView: {
             yaw: 0,
             pitch: 0,
@@ -538,88 +538,171 @@
           },
           hotspots: [
             {
-              id: "factory-door",
+              id: "american-bittern",
               type: "annotation",
-              label: "Factory entrance",
-              pitch: -2,
-              yaw: 35,
-              iconSrc: "images/hotspot-default.svg",
-              iconAlt: "",
+              label: "American Bittern hidden in the cattails",
+              pitch: -3,
+              yaw: 108,
               iconSize: 32,
               fallbackIcon: "+",
-              title: "Factory Entrance",
-              description: "<p>This entrance was used by workers arriving for the morning shift.</p><p><strong>Notice:</strong> the worn threshold and reinforced door frame.</p>",
-              mediaType: "image",
-              mediaSrc: "images/factory-door.jpg",
-              mediaAlt: "Historic photograph of the factory entrance"
+              title: "American Bittern",
+              description: `
+                <p>The American Bittern is a secretive marsh bird whose streaked plumage blends into cattails and reeds. When alarmed, it may point its bill upward and sway with the vegetation.</p>
+                <p><strong>Look closely:</strong> this bird is intentionally difficult to find in the panorama.</p>
+              `,
+              mediaType: "embed",
+              mediaEmbed: `<iframe width="560" height="315" src="https://www.youtube.com/embed/F-Jd-b-R658" title="American Bittern video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`,
+              mediaTitle: "American Bittern video"
             },
             {
-              id: "go-to-machine-room",
+              id: "virginia-rail",
+              type: "annotation",
+              label: "Virginia Rail near the boardwalk",
+              pitch: -17,
+              yaw: 94,
+              iconSize: 32,
+              fallbackIcon: "♪",
+              title: "Virginia Rail",
+              description: `
+                <p>Virginia Rails move through dense marsh vegetation, often remaining hidden even when they are calling nearby. Their narrow bodies help them slip between upright reeds.</p>
+                <p>Listen to a field recording from Xeno-canto.</p>
+              `,
+              mediaType: "embed",
+              mediaEmbed: `<iframe src="https://xeno-canto.org/1012718/embed?simple=1" title="Virginia Rail field recording from Xeno-canto" scrolling="no" frameborder="0" width="340" height="115"></iframe>`,
+              mediaTitle: "Virginia Rail field recording"
+            },
+            {
+              id: "common-gallinule",
+              type: "annotation",
+              label: "Common Gallinule in the open water",
+              pitch: -10,
+              yaw: 34,
+              iconSize: 32,
+              fallbackIcon: "i",
+              title: "Common Gallinule",
+              description: `
+                <p>The Common Gallinule is a dark marsh bird with a red-and-yellow bill, long toes, and a white stripe along its side. It often swims in open channels near dense vegetation.</p>
+                <p>Unlike a duck, it frequently bobs its head as it moves across the water.</p>
+              `
+            },
+            {
+              id: "red-winged-blackbird",
+              type: "annotation",
+              label: "Red-winged Blackbird perched on a reed",
+              pitch: 2,
+              yaw: -70,
+              iconSize: 32,
+              fallbackIcon: "+",
+              title: "Red-winged Blackbird",
+              description: `
+                <p>Male Red-winged Blackbirds defend marsh territories from exposed perches. Their red shoulder patches are especially visible when they sing or confront another bird.</p>
+                <p>The slideshow shows the bird singing, perched, and attacking a much larger Great Egret.</p>
+              `,
+              mediaType: "slideshow",
+              slides: [
+                {
+                  imageSrc: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Red-winged_blackbird_singing_%2894019%29.jpg/960px-Red-winged_blackbird_singing_%2894019%29.jpg",
+                  imageAlt: "Male Red-winged Blackbird singing from a perch",
+                  title: "Singing male",
+                  text: "A male displays its red shoulder patch while singing. Source: Wikimedia Commons."
+                },
+                {
+                  imageSrc: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/20260415_red_winged_blackbird_cedar_hill_cemetery_PD05184.jpg/960px-20260415_red_winged_blackbird_cedar_hill_cemetery_PD05184.jpg",
+                  imageAlt: "Red-winged Blackbird perched among vegetation",
+                  title: "Perched in habitat",
+                  text: "Red-winged Blackbirds often choose conspicuous perches above marsh vegetation. Source: Wikimedia Commons."
+                },
+                {
+                  imageSrc: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Red-winged_blackbird_attacks_great_egret_%2872158%29.jpg/960px-Red-winged_blackbird_attacks_great_egret_%2872158%29.jpg",
+                  imageAlt: "Red-winged Blackbird attacking a Great Egret in flight",
+                  title: "Territorial defense",
+                  text: "A much smaller blackbird attacks a Great Egret near its territory. Source: Wikimedia Commons."
+                }
+              ]
+            },
+            {
+              id: "black-tern",
+              type: "annotation",
+              label: "Black Tern flying over the marsh",
+              pitch: 17,
+              yaw: -106,
+              iconSize: 32,
+              fallbackIcon: "+",
+              title: "Black Tern",
+              description: `
+                <p>Black Terns fly lightly over shallow wetlands, picking insects from the air and small prey from the water surface. Their breeding plumage is dark gray to black with pale wings.</p>
+                <p><a href="https://commons.wikimedia.org/wiki/File:Chlidonias_niger_map.svg" target="_blank" rel="noopener">Range map by Cephas</a>, licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0" target="_blank" rel="noopener">CC BY-SA 4.0</a>, via Wikimedia Commons.</p>
+              `,
+              mediaType: "image",
+              mediaSrc: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Chlidonias_niger_map.svg",
+              mediaAlt: "Range map for the Black Tern"
+            },
+            {
+              id: "go-to-hawk-mountain",
               type: "teleport",
-              label: "Go to the machine room",
-              description: "Move from the factory floor to the machine room.",
-              pitch: -5,
-              yaw: 112,
-              targetScene: "machine-room",
-              targetYaw: -35,
+              label: "Travel to Hawk Mountain",
+              description: "Move from the marsh boardwalk to the Hawk Mountain overlook.",
+              pitch: -8,
+              yaw: -145,
+              targetScene: "hawk-mountain",
+              targetYaw: 0,
               targetPitch: 0,
               targetHfov: 120,
               iconSize: 38,
               fallbackIcon: "➜"
-            },
-            {
-              id: "oral-history",
-              type: "annotation",
-              label: "Oral history",
-              pitch: 4,
-              yaw: -78,
-              iconSrc: "images/hotspot-default.svg",
-              iconAlt: "",
-              iconSize: 32,
-              fallbackIcon: "▶",
-              title: "Oral History Clip",
-              description: "<p>Listen to a former worker describe the sound of the factory.</p>",
-              mediaType: "embed",
-              mediaEmbed: `<iframe title="Oral history audio player" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=YOUR_TRACK_URL"></iframe>`,
-              mediaTitle: "Oral history audio player"
             }
           ]
         },
 
         "hawk-mountain": {
-          title: "Hawk Mountain",
-          description: "A 360-degree vista of Hawk Mountain",
-          panorama: "images/scene-02.jpg",
-          thumbnail: "images/scene-02.jpg",
-          thumbnailAlt: "Preview of the Hawk Mountain panorama",
+          title: "Hawk Mountain Overlook",
+          description: "A 360-degree fall view from a rocky overlook at Hawk Mountain in Pennsylvania. Forested Appalachian ridges extend across the horizon while a Golden Eagle and Northern Goshawk pass overhead during migration.",
+          panorama: "images/hawk-mountain-panorama.jpg",
+          thumbnail: "images/hawk-mountain-panorama.jpg",
+          thumbnailAlt: "Preview of a rocky Hawk Mountain overlook surrounded by fall foliage",
           startView: {
-            yaw: -35,
+            yaw: 0,
             pitch: 0,
             hfov: 120
           },
           hotspots: [
             {
-              id: "machine-note",
+              id: "golden-eagle",
               type: "annotation",
-              label: "Machine detail",
-              pitch: 2,
-              yaw: 25,
-              iconSrc: "images/hotspot-default.svg",
-              iconAlt: "",
+              label: "Golden Eagle soaring above the ridge",
+              pitch: 20,
+              yaw: 38,
               iconSize: 32,
-              fallbackIcon: "i",
-              title: "Machine Detail",
-              description: "<p>Each scene has its own hotspot list.</p><p>Replace this with information specific to the second panorama.</p>"
+              fallbackIcon: "+",
+              title: "Golden Eagle",
+              description: `
+                <p>Golden Eagles are large, long-winged raptors that migrate along Appalachian ridges. Rising air along the mountain slopes allows them to travel while using relatively little energy.</p>
+                <p>Look for broad wings, a relatively small head, and golden-brown feathers on the back of the head and neck.</p>
+              `
             },
             {
-              id: "return-to-factory-floor",
+              id: "northern-goshawk",
+              type: "annotation",
+              label: "Northern Goshawk flying past the overlook",
+              pitch: 11,
+              yaw: -43,
+              iconSize: 32,
+              fallbackIcon: "+",
+              title: "Northern Goshawk",
+              description: `
+                <p>The Northern Goshawk is a powerful forest hawk with short, rounded wings and a long tail. Those proportions help it maneuver rapidly through wooded habitat.</p>
+                <p>In migration, observers may see one cross an open ridge before it disappears back toward the forest.</p>
+              `
+            },
+            {
+              id: "return-to-marsh",
               type: "teleport",
-              label: "Return to the factory floor",
-              description: "Move from the machine room back to the factory floor.",
-              pitch: -6,
-              yaw: -110,
-              targetScene: "factory-floor",
-              targetYaw: 112,
+              label: "Return to the marsh boardwalk",
+              description: "Move from Hawk Mountain back to the marsh boardwalk.",
+              pitch: -12,
+              yaw: -150,
+              targetScene: "marsh-boardwalk",
+              targetYaw: 0,
               targetPitch: 0,
               targetHfov: 120,
               iconSize: 38,
@@ -628,7 +711,6 @@
           ]
         }
       };
-
       /* END STUDENT EDITING SECTION */
 
       const p360Root = document.getElementById("p360-root");
