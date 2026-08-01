@@ -592,8 +592,27 @@ Thumbnail images are cropped to a 16:9 frame. Create a separate thumbnail image 
 
 Pannellum is loaded from jsDelivr in `index.html`. The panorama will therefore require an internet connection unless the Pannellum files are downloaded and hosted locally.
 
-## License and media rights
+## License and Media Rights
 
-Add a license to the repository if others may reuse the code. The license for the template code does not automatically grant permission to reuse photographs, audio, video, interviews, or other media included in a project.
+### Template code and documentation
 
-Credit and document all third-party media according to its license and the standards of the project.
+This template was created with substantial assistance from generative AI and is intended to be completely open and free to use.
+
+To the extent that any copyright or related rights exist in the template’s original code, configuration examples, instructions, and documentation, those rights are waived under the **Creative Commons CC0 1.0 Universal Public Domain Dedication**.
+
+You may copy, modify, distribute, publish, teach with, or build upon the template for any purpose, including commercial purposes. Attribution is appreciated but not required.
+
+This dedication applies only to original material created specifically for this template. Third-party libraries, frameworks, and other dependencies remain subject to their own licenses.
+
+### Media rights
+
+The photographs, panoramic images, videos, audio recordings, thumbnails, and other media files included in this repository are provided only as temporary demonstration content.
+
+**The included media is not licensed for reuse.**
+
+Do not copy, redistribute, publish, modify, or use the included media in another project unless you have independently obtained permission from the applicable copyright holder.
+
+Before publishing a project made with this template, replace all demonstration media with material that you created, licensed, or otherwise have permission to use.
+
+The CC0 dedication for the template does not apply to any demonstration media.
+
